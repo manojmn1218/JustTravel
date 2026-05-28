@@ -1,0 +1,24 @@
+@import 'tailwindcss';
+
+/* Tailwind v4: make `dark:` respond to `.dark` class (not media query) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* App-wide base styles (Tailwind handles most styling) */
+:root {
+  color-scheme: light dark;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+}
+
+/* Better default focus outline */
+:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}

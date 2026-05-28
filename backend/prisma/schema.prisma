@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         String   @default("user")
+
+  phone        String?
+  address      String?
+  profilePic   String?
+
+  otpCode      String?
+  otpExpiry    DateTime?
+
+  bookings     Booking[]
+  feedbacks    Feedback[]
+}
+
+model Booking {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  package   String
+  priceInr  Int
+  travelDate DateTime
+  travelers Int
+  status    String   @default("confirmed")
+  refundAmount Int?
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Feedback {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  subject   String
+  message   String
+
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  email     String
+  name      String
+
+  @@index([createdAt])
+}
+
+model Location {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  name        String
+  category    String
+  duration    String
+  price       Int
+  image       String
+  description String
+  rating      Float    @default(4.5)
+  popular     Boolean  @default(false)
+}
