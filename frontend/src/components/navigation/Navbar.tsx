@@ -1,6 +1,5 @@
 import { Link, NavLink } from 'react-router-dom'
 import { useAuth } from '../../features/auth/AuthProvider'
-import { useTheme } from '../theme/ThemeProvider'
 
 function NavItem({ to, label }: { to: string; label: string }) {
   return (

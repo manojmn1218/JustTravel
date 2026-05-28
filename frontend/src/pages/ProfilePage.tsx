@@ -1001,9 +1001,9 @@ export default function ProfilePage() {
                       <td className="px-5 py-3.5 font-medium text-slate-900 dark:text-white">
                         ₹{Number(b.priceInr).toLocaleString('en-IN')}
                         {b.status === 'cancelled' && b.refundAmount !== undefined && (
-                          <div className="text-xs font-normal text-slate-500 dark:text-slate-400 mt-1">
-                            Refunded: ₹{b.refundAmount.toLocaleString('en-IN')}
-                          </div>
+                          <p className="mt-1 text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+                            Refunded: ₹{(b.refundAmount ?? 0).toLocaleString('en-IN')}
+                          </p>
                         )}
                       </td>
                       <td className="px-5 py-3.5">
