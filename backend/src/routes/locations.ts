@@ -11,8 +11,14 @@ export const locationsRouter = Router()
 // GET /api/locations — public (no auth required)
 locationsRouter.get(
   '/',
-  asyncHandler(async (_req, res) => {
+  asyncHandler(async (req, res) => {
+    const { category } = req.query
+    const where: any = {}
+    if (category) {
+      where.category = String(category)
+    }
     const locations = await prisma.location.findMany({
+      where,
       orderBy: [{ popular: 'desc' }, { createdAt: 'asc' }],
     })
     res.json({ locations })
@@ -49,7 +55,7 @@ locationsRouter.delete(
   requireAuth,
   requireRole(['admin']),
   asyncHandler(async (req, res) => {
-    const id = req.params.id
+    const id = String(req.params.id)
     await prisma.location.delete({ where: { id } })
     res.status(204).send()
   }),

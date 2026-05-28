@@ -40,7 +40,7 @@ authRouter.post(
       },
     })
 
-    const token = signAccessToken({ sub: user.id, role: user.role })
+    const token = signAccessToken({ sub: user.id, role: user.role as 'admin' | 'user' })
     res.status(201).json({ token, user })
   }),
 )
@@ -61,7 +61,7 @@ authRouter.post(
     const ok = await bcrypt.compare(password, user.passwordHash)
     if (!ok) throw new HttpError(401, 'Invalid credentials')
 
-    const token = signAccessToken({ sub: user.id, role: user.role })
+    const token = signAccessToken({ sub: user.id, role: user.role as 'admin' | 'user' })
     res.json({
       token,
       user: { 
@@ -156,11 +156,12 @@ authRouter.patch(
     }
 
     const { otp, ...updateData } = data
+    const cleanedData = Object.fromEntries(Object.entries(updateData).filter(([_, v]) => v !== undefined))
 
     const user = await prisma.user.update({
       where: { id: userId },
       data: {
-        ...updateData,
+        ...cleanedData,
         otpCode: null,
         otpExpiry: null
       },
