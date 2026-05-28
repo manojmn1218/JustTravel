@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card } from '../components/ui/Card'
 import { FormField, TextArea, TextInput } from '../components/ui/FormField'
@@ -17,6 +17,7 @@ type Booking = {
   travelDate: string
   travelers: number
   status: string
+  refundAmount?: number | null
 }
 
 /* ── icons (inline SVGs) ──────────────────────────────── */
@@ -636,8 +637,8 @@ export default function ProfilePage() {
     setSuccess(false)
     setSaving(true)
     
-    const emailChanged = email.trim() !== authUser.email
-    const phoneChanged = phone.trim() !== (authUser.phone || '')
+    const emailChanged = email.trim() !== authUser?.email
+    const phoneChanged = phone.trim() !== (authUser?.phone || '')
     
     if (emailChanged || phoneChanged) {
       try {
