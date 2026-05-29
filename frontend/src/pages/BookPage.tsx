@@ -51,14 +51,14 @@ export default function BookPage() {
       draft.phone.trim().length === 10 &&
       validDate &&
       draft.count >= 1 &&
-      draft.count <= 5
+      draft.count <= 9
     )
   }, [draft])
 
   function onProceed() {
     setError(null)
     if (!canSubmit) {
-      setError('Please fill all fields correctly. Travel date must be in the future, and travelers between 1-5.')
+      setError('Please fill all fields correctly. Travel date must be in the future, and travelers between 1-9.')
       return
     }
 
@@ -143,16 +143,18 @@ export default function BookPage() {
               onChange={(e) => setDraft((s) => ({ ...s, date: e.target.value }))}
             />
           </FormField>
-          <FormField label="Travelers" hint="Min 1, max 5">
+          <FormField label="Travelers" hint="Min 1, max 9">
             <TextInput
               required
-              type="number"
-              min={1}
-              max={5}
-              value={draft.count}
-              onChange={(e) =>
-                setDraft((s) => ({ ...s, count: parsePositiveInt(e.target.value, 1) }))
-              }
+              type="text"
+              inputMode="numeric"
+              pattern="[1-9]"
+              maxLength={1}
+              value={draft.count || ''}
+              onChange={(e) => {
+                const val = e.target.value.replace(/\D/g, '')
+                setDraft((s) => ({ ...s, count: val ? parseInt(val, 10) : 0 }))
+              }}
             />
           </FormField>
 
