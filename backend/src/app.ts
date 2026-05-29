@@ -19,7 +19,13 @@ export function createApp() {
   app.use(helmet())
   app.use(
     cors({
-      origin: env.CORS_ORIGIN,
+      origin: function (origin, callback) {
+        if (!origin) return callback(null, true)
+        if (origin === env.CORS_ORIGIN || origin.endsWith('.vercel.app')) {
+          return callback(null, true)
+        }
+        return callback(null, false)
+      },
       credentials: true,
     }),
   )
