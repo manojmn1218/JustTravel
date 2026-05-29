@@ -9,6 +9,7 @@ import { bookingsRouter } from './routes/bookings'
 import { adminRouter } from './routes/admin'
 import { locationsRouter } from './routes/locations'
 import { feedbackRouter } from './routes/feedback'
+import { otpRouter } from './routes/otp'
 
 export function createApp() {
   const env = getEnv()
@@ -48,6 +49,7 @@ export function createApp() {
   app.use('/api/admin', adminRouter)
   app.use('/api/locations', locationsRouter)
   app.use('/api/feedback', feedbackRouter)
+  app.use('/api/otp', otpRouter)
 
   // Fallback for any other /api route
   app.use('/api', (_req, _res, next) => next(new HttpError(404, 'Not found')))

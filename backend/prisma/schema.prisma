@@ -77,3 +77,16 @@ model Location {
   rating      Float    @default(4.5)
   popular     Boolean  @default(false)
 }
+
+model OtpVerification {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  email     String
+  phone     String
+  code      String
+  expiresAt DateTime
+  verified  Boolean  @default(false)
+
+  @@index([email, phone])
+}
