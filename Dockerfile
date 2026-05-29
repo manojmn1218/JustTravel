@@ -14,5 +14,4 @@ RUN npx prisma generate
 COPY backend/ .
 RUN npm run build
 
-# Let Railway control the port - don't hardcode EXPOSE
-CMD ["sh", "-c", "npx prisma db push --accept-data-loss && node dist/server.js"]
+CMD ["sh", "-c", "npx prisma db push --accept-data-loss && npm run prisma:seed && node dist/server.js"]
