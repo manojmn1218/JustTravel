@@ -6,10 +6,6 @@ const EnvSchema = z.object({
   CORS_ORIGIN: z.string().default('http://localhost:5173'),
   JWT_SECRET: z.string().min(32),
   DATABASE_URL: z.string().min(1),
-  RESEND_API_KEY: z.string().optional(),
-  TWILIO_ACCOUNT_SID: z.string().optional(),
-  TWILIO_AUTH_TOKEN: z.string().optional(),
-  TWILIO_FROM_NUMBER: z.string().optional(),
 })
 
 export type Env = z.infer<typeof EnvSchema>

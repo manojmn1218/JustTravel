@@ -255,6 +255,7 @@ function AddLocationModal({
 
   useEffect(() => {
     if (open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDraft(EMPTY_DRAFT)
       setError(null)
       setTimeout(() => firstInputRef.current?.focus(), 50)
@@ -557,6 +558,7 @@ export default function AdminPage() {
 
     if (tab === 'users' || tab === 'overview') {
       if (!loaded.has('users')) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setUsersLoading(true)
         apiFetch<{ users: User[] }>('/api/admin/users')
           .then((r) => { setUsers(r.users); setLoaded((s) => new Set(s).add('users')) })

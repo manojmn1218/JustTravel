@@ -31,7 +31,12 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
   const token = getToken()
   if (token) headers.set('authorization', `Bearer ${token}`)
 
-  const res = await fetch(`${API_BASE}${path}`, { ...init, headers })
+  let res: Response
+  try {
+    res = await fetch(`${API_BASE}${path}`, { ...init, headers })
+  } catch {
+    throw new ApiError(0, 'Could not connect to the server. Is the backend running?', null)
+  }
   const text = await res.text()
   const body = text ? (safeJson(text) ?? text) : null
 

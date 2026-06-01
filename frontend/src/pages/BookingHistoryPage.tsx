@@ -18,7 +18,7 @@ function getRefundInfo(booking: Booking) {
   const diffTime = travelDate.getTime() - now.getTime()
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
   
-  let percent = 0
+  let percent: number
   if (diffDays > 7) percent = 90
   else if (diffDays >= 3) percent = 50
   else percent = 0

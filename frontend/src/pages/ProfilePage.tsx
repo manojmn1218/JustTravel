@@ -490,13 +490,13 @@ function SupportTab({ userName, userEmail }: { userName: string; userEmail: stri
   )
 }
 
-function getRefundInfo(booking: any) {
+function getRefundInfo(booking: Booking) {
   const now = new Date()
   const travelDate = new Date(booking.travelDate)
   const diffTime = travelDate.getTime() - now.getTime()
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
   
-  let percent = 0
+  let percent: number
   if (diffDays > 7) percent = 90
   else if (diffDays >= 3) percent = 50
   else percent = 0
@@ -546,6 +546,7 @@ export default function ProfilePage() {
   // Sync from authUser when it refreshes
   useEffect(() => {
     if (authUser) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setName(authUser.name)
       setEmail(authUser.email)
       setPhone(authUser.phone ?? '')
@@ -557,6 +558,7 @@ export default function ProfilePage() {
   // Load bookings when switching to bookings tab
   useEffect(() => {
     if (activeTab !== 'bookings' || bookingsLoaded) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setBookingsLoading(true)
     apiFetch<{ bookings: Booking[] }>('/api/bookings')
       .then((res) => setBookings(res.bookings))
@@ -570,7 +572,7 @@ export default function ProfilePage() {
       })
   }, [activeTab, bookingsLoaded])
 
-  async function handleCancel(b: any) {
+  async function handleCancel(b: Booking) {
     const info = getRefundInfo(b)
     const confirmMsg = `Are you sure you want to cancel this booking?\n\n`
       + `Package: ${b.package}\n`
@@ -646,7 +648,7 @@ export default function ProfilePage() {
         setOtpModalOpen(true)
         setOtpError(null)
         setOtpCode('')
-      } catch (err) {
+      } catch {
         alert('Failed to send OTP')
       } finally {
         setSaving(false)
