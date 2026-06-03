@@ -1,3 +1,4 @@
+// Trigger Vercel rebuild to apply the VITE_API_BASE_URL environment variable
 export class ApiError extends Error {
   readonly status: number
   readonly body: unknown
