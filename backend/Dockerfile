@@ -17,5 +17,5 @@ RUN npm run build
 # Expose port
 EXPOSE 4000
 
-# Start: push schema to DB then run server
-CMD ["sh", "-c", "npx prisma db push --accept-data-loss && node dist/server.js"]
+# Start: push schema to DB, run seed, then run server
+CMD ["sh", "-c", "npx prisma db push --accept-data-loss && npm run prisma:seed && node dist/server.js"]
