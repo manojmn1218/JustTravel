@@ -10,7 +10,7 @@ export class ApiError extends Error {
   }
 }
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://just-travel-production.up.railway.app'
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://justtravel.onrender.com'
 
 export function getToken(): string | null {
   return localStorage.getItem('authToken')
