@@ -32,6 +32,8 @@ const CreateBookingSchema = z.object({
   priceInr: z.number().int().nonnegative(),
   travelDate: z.string().datetime(),
   travelers: z.number().int().min(1).max(10),
+  paymentMethod: z.string(),
+  transactionId: z.string(),
 })
 
 bookingsRouter.post(
@@ -48,6 +50,8 @@ bookingsRouter.post(
         priceInr: body.priceInr,
         travelDate: new Date(body.travelDate),
         travelers: body.travelers,
+        paymentMethod: body.paymentMethod,
+        transactionId: body.transactionId,
       },
     })
     res.status(201).json({ booking })

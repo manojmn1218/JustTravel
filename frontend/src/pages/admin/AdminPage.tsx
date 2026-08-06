@@ -543,6 +543,7 @@ export default function AdminPage() {
   const [locationFilter, setLocationFilter] = useState<'all' | 'beach' | 'city' | 'mountain'>('all')
   const [showAddModal, setShowAddModal] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [deletingUserId, setDeletingUserId] = useState<string | null>(null)
 
   // Fetch stats on mount
   useEffect(() => {
@@ -608,6 +609,21 @@ export default function AdminPage() {
       alert('Failed to delete location')
     } finally {
       setDeletingId(null)
+    }
+  }
+
+  async function handleDeleteUser(id: string, name: string) {
+    if (!window.confirm(`Delete user "${name}"? This will also remove all their bookings. This cannot be undone.`)) return
+    setDeletingUserId(id)
+    try {
+      await apiFetch(`/api/admin/users/${id}`, { method: 'DELETE' })
+      setUsers((prev) => prev.filter((u) => u.id !== id))
+      setBookings((prev) => prev.filter((b) => b.user.id !== id))
+      setStats((s) => s ? { ...s, totalUsers: s.totalUsers - 1 } : s)
+    } catch (err) {
+      alert(err instanceof ApiError ? err.message : 'Failed to delete user')
+    } finally {
+      setDeletingUserId(null)
     }
   }
 
@@ -753,6 +769,7 @@ export default function AdminPage() {
                     <th className="px-5 py-3 font-medium">Email</th>
                     <th className="px-5 py-3 font-medium">Role</th>
                     <th className="px-5 py-3 font-medium">Joined</th>
+                    <th className="px-5 py-3 font-medium text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -780,10 +797,30 @@ export default function AdminPage() {
                       <td className="px-5 py-3 text-slate-500 dark:text-slate-400">
                         {new Date(u.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </td>
+                      <td className="px-5 py-3 text-right">
+                        {u.role !== 'admin' ? (
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteUser(u.id, u.name)}
+                            disabled={deletingUserId === u.id}
+                            title="Delete user"
+                            className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-rose-500 transition hover:bg-rose-50 hover:text-rose-700 disabled:opacity-50 dark:hover:bg-rose-950/30 dark:hover:text-rose-400"
+                          >
+                            {deletingUserId === u.id ? (
+                              <div className="size-3.5 animate-spin rounded-full border-2 border-rose-500 border-t-transparent" />
+                            ) : (
+                              <TrashIcon />
+                            )}
+                            {deletingUserId === u.id ? 'Deleting…' : 'Delete'}
+                          </button>
+                        ) : (
+                          <span className="text-xs text-slate-400 dark:text-slate-500">—</span>
+                        )}
+                      </td>
                     </tr>
                   ))}
                   {users.length === 0 && (
-                    <tr><td colSpan={4} className="px-5 py-8 text-center text-slate-500">No users found</td></tr>
+                    <tr><td colSpan={5} className="px-5 py-8 text-center text-slate-500">No users found</td></tr>
                   )}
                 </tbody>
               </table>

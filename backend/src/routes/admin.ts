@@ -53,6 +53,34 @@ adminRouter.get(
   }),
 )
 
+// Delete a user (admin cannot delete themselves)
+adminRouter.delete(
+  '/users/:id',
+  asyncHandler(async (req, res) => {
+    const id = req.params.id as string
+    const currentUserId = req.auth!.id
+
+    if (id === currentUserId) {
+      res.status(400).json({ error: { message: 'You cannot delete your own account.' } })
+      return
+    }
+
+    const user = await prisma.user.findUnique({ where: { id } })
+    if (!user) {
+      res.status(404).json({ error: { message: 'User not found.' } })
+      return
+    }
+
+    // Delete related OTP verifications by email
+    await prisma.otpVerification.deleteMany({ where: { email: user.email } })
+
+    // Bookings cascade-delete via schema, just delete the user
+    await prisma.user.delete({ where: { id } })
+
+    res.json({ message: 'User deleted successfully.' })
+  }),
+)
+
 // Feedback list
 adminRouter.get(
   '/feedback',

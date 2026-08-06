@@ -10,6 +10,8 @@ type Booking = {
   travelers: number
   status: string
   refundAmount?: number
+  paymentMethod?: string | null
+  transactionId?: string | null
 }
 
 function getRefundInfo(booking: Booking) {
@@ -108,7 +110,14 @@ export default function BookingHistoryPage() {
                     key={b.id}
                     className="odd:bg-white even:bg-slate-50 dark:odd:bg-slate-950 dark:even:bg-slate-900/40"
                   >
-                    <td className="px-4 py-3">{b.package}</td>
+                    <td className="px-4 py-3">
+                      <div className="font-medium">{b.package}</div>
+                      {b.paymentMethod && b.transactionId && (
+                        <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
+                          Paid via {b.paymentMethod.toUpperCase()} ({b.transactionId})
+                        </div>
+                      )}
+                    </td>
                     <td className="px-4 py-3">{new Date(b.travelDate).toLocaleDateString()}</td>
                     <td className="px-4 py-3">{b.travelers}</td>
                     <td className="px-4 py-3">

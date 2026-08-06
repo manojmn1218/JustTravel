@@ -39,6 +39,8 @@ model Booking {
   travelers Int
   status    String   @default("confirmed")
   refundAmount Int?
+  paymentMethod String?
+  transactionId String?   @unique
 
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)

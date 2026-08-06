@@ -51,7 +51,35 @@ export default function PaymentPage() {
     }
 
     setLoading(true)
-    await new Promise((r) => setTimeout(r, 800))
+    let transactionId: string
+
+    try {
+      const payload: Record<string, unknown> = {
+        method,
+        amount: pending.price,
+      }
+      if (method === 'upi') {
+        payload.upiId = upiId.trim()
+      } else {
+        payload.cardNumber = cardNumber.trim()
+        payload.expiry = expiry.trim()
+        payload.cvv = cvv.trim()
+      }
+
+      const res = await apiFetch<{ success: boolean; transactionId: string }>(
+        '/api/payments/process',
+        {
+          method: 'POST',
+          body: JSON.stringify(payload),
+        },
+      )
+      transactionId = res.transactionId
+    } catch (e: unknown) {
+      if (e instanceof ApiError) setError(e.message)
+      else setError('Payment processing failed. Please check your details.')
+      setLoading(false)
+      return
+    }
 
     try {
       await apiFetch('/api/bookings', {
@@ -61,6 +89,8 @@ export default function PaymentPage() {
           priceInr: pending.price,
           travelDate: new Date(pending.date).toISOString(),
           travelers: pending.count,
+          paymentMethod: method,
+          transactionId,
         }),
       })
       localStorage.removeItem('pendingBooking')

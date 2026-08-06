@@ -6,6 +6,7 @@ import { getEnv } from './env'
 import { errorHandler, HttpError } from './errors'
 import { authRouter } from './routes/auth'
 import { bookingsRouter } from './routes/bookings'
+import { paymentsRouter } from './routes/payments'
 import { adminRouter } from './routes/admin'
 import { locationsRouter } from './routes/locations'
 import { feedbackRouter } from './routes/feedback'
@@ -46,6 +47,7 @@ export function createApp() {
 
   app.use('/api/auth', authRouter)
   app.use('/api/bookings', bookingsRouter)
+  app.use('/api/payments', paymentsRouter)
   app.use('/api/admin', adminRouter)
   app.use('/api/locations', locationsRouter)
   app.use('/api/feedback', feedbackRouter)

@@ -18,6 +18,8 @@ type Booking = {
   travelers: number
   status: string
   refundAmount?: number | null
+  paymentMethod?: string | null
+  transactionId?: string | null
 }
 
 /* ── icons (inline SVGs) ──────────────────────────────── */
@@ -995,7 +997,14 @@ export default function ProfilePage() {
                       key={b.id}
                       className="border-b border-slate-100 transition hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800/50"
                     >
-                      <td className="px-5 py-3.5 font-medium text-slate-900 dark:text-white">{b.package}</td>
+                      <td className="px-5 py-3.5">
+                        <div className="font-medium text-slate-900 dark:text-white">{b.package}</div>
+                        {b.paymentMethod && b.transactionId && (
+                          <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
+                            Paid via {b.paymentMethod.toUpperCase()} ({b.transactionId})
+                          </div>
+                        )}
+                      </td>
                       <td className="px-5 py-3.5 text-slate-600 dark:text-slate-300">
                         {new Date(b.travelDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </td>
