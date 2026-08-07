@@ -11,9 +11,13 @@ export const otpRouter = Router()
 
 const env = getEnv()
 
-// Initialize Twilio client
-// We wrap it in a function or check values so it doesn't fail compilation
-const twilioClient = twilio(env.TWILIO_ACCOUNT_SID, env.TWILIO_AUTH_TOKEN)
+// Initialize Twilio client lazily if credentials are valid
+function getTwilioClient(): any {
+  if (!env.TWILIO_ACCOUNT_SID.startsWith('AC') || env.TWILIO_ACCOUNT_SID.includes('dummy')) {
+    return null
+  }
+  return twilio(env.TWILIO_ACCOUNT_SID, env.TWILIO_AUTH_TOKEN)
+}
 
 const SendOtpSchema = z.object({
   email: z.string().email(),
@@ -52,16 +56,16 @@ otpRouter.post(
 
     // Send SMS via Twilio
     try {
-      // Only send if it's not dummy credentials
-      if (!env.TWILIO_ACCOUNT_SID.includes('dummy')) {
-        await twilioClient.messages.create({
+      const client = getTwilioClient()
+      if (client) {
+        await client.messages.create({
           body: `Your JustTravel verification code is ${code}. Valid for 5 minutes.`,
           from: env.TWILIO_PHONE_NUMBER,
           to: formattedPhone,
         })
         console.log(`[Twilio SMS] Successfully sent code ${code} to ${formattedPhone}`)
       } else {
-        console.log(`[SIMULATE SMS] To: ${formattedPhone}, Code: ${code} (Using dummy credentials)`)
+        console.log(`[SIMULATE SMS] To: ${formattedPhone}, Code: ${code} (Using dummy/invalid credentials)`)
       }
     } catch (err: unknown) {
       console.error('Failed to send Twilio SMS:', err)
