@@ -1,77 +1,78 @@
 import { Router } from 'express'
 import { z } from 'zod'
 import crypto from 'crypto'
+import Razorpay from 'razorpay'
 import { HttpError } from '../errors'
 import { asyncHandler } from '../lib/asyncHandler'
 import { requireAuth } from '../middleware/auth'
 import { validateBody } from '../middleware/validate'
+import { getEnv } from '../env'
 
 export const paymentsRouter = Router()
 
-// Payments are only allowed for authenticated users
 paymentsRouter.use(requireAuth)
 
-const ProcessPaymentSchema = z.object({
-  method: z.enum(['upi', 'card']),
+const env = getEnv()
+
+const razorpay = new Razorpay({
+  key_id: env.RAZORPAY_KEY_ID,
+  key_secret: env.RAZORPAY_KEY_SECRET,
+})
+
+// ── Step 1: Create a Razorpay order ──────────────────────
+const CreateOrderSchema = z.object({
   amount: z.number().int().positive(),
-  upiId: z.string().optional(),
-  cardNumber: z.string().optional(),
-  expiry: z.string().optional(),
-  cvv: z.string().optional(),
 })
 
 paymentsRouter.post(
-  '/process',
-  validateBody(ProcessPaymentSchema),
+  '/create-order',
+  validateBody(CreateOrderSchema),
   asyncHandler(async (req, res) => {
-    const { method, amount, upiId, cardNumber, expiry, cvv } = req.body as z.infer<
-      typeof ProcessPaymentSchema
-    >
+    const { amount } = req.body as z.infer<typeof CreateOrderSchema>
 
-    if (method === 'upi') {
-      if (!upiId) {
-        throw new HttpError(400, 'UPI ID is required for UPI payments.')
-      }
-      if (!/^[a-zA-Z0-9.\-_]{3,30}@[a-zA-Z]{2,15}$/.test(upiId!.trim())) {
-        throw new HttpError(400, 'Please enter a valid UPI ID (e.g. name@bank).')
-      }
-    } else if (method === 'card') {
-      if (!cardNumber || !expiry || !cvv) {
-        throw new HttpError(400, 'Card number, expiry date, and CVV are required.')
-      }
-      if (cardNumber.trim().length !== 16 || cvv.trim().length < 3) {
-        throw new HttpError(400, 'Please enter a valid 16-digit card number and CVV.')
-      }
+    const order = await razorpay.orders.create({
+      amount: amount * 100, // Razorpay expects amount in paise
+      currency: 'INR',
+      receipt: `rcpt_${Date.now()}`,
+    })
 
-      const parts = expiry!.split('/')
-      const mm = parts[0]
-      const yy = parts[1]
+    res.json({
+      orderId: order.id,
+      amount: order.amount,
+      currency: order.currency,
+      keyId: env.RAZORPAY_KEY_ID, // frontend needs this to open checkout
+    })
+  }),
+)
 
-      if (!mm || !yy) {
-        throw new HttpError(400, 'Please enter a valid, unexpired Expiry Date (MM/YY).')
-      }
+// ── Step 2: Verify payment after Razorpay checkout ───────
+const VerifyPaymentSchema = z.object({
+  razorpay_order_id: z.string(),
+  razorpay_payment_id: z.string(),
+  razorpay_signature: z.string(),
+})
 
-      const month = parseInt(mm, 10)
-      const year = parseInt(`20${yy}`, 10)
-      const now = new Date()
+paymentsRouter.post(
+  '/verify',
+  validateBody(VerifyPaymentSchema),
+  asyncHandler(async (req, res) => {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
+      req.body as z.infer<typeof VerifyPaymentSchema>
 
-      if (
-        month < 1 ||
-        month > 12 ||
-        year < now.getFullYear() ||
-        (year === now.getFullYear() && month < now.getMonth() + 1)
-      ) {
-        throw new HttpError(400, 'Please enter a valid, unexpired Expiry Date (MM/YY).')
-      }
+    // Verify signature using HMAC SHA256
+    const expectedSignature = crypto
+      .createHmac('sha256', env.RAZORPAY_KEY_SECRET)
+      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+      .digest('hex')
+
+    if (expectedSignature !== razorpay_signature) {
+      throw new HttpError(400, 'Payment verification failed. Invalid signature.')
     }
-
-    // Generate a simulated transaction ID
-    const transactionId = `txn_${crypto.randomUUID().replace(/-/g, '').substring(0, 16)}`
 
     res.json({
       success: true,
-      transactionId,
-      message: 'Payment processed successfully',
+      paymentId: razorpay_payment_id,
+      orderId: razorpay_order_id,
     })
   }),
 )
