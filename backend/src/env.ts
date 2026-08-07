@@ -8,6 +8,9 @@ const EnvSchema = z.object({
   DATABASE_URL: z.string().min(1),
   RAZORPAY_KEY_ID: z.string().min(1),
   RAZORPAY_KEY_SECRET: z.string().min(1),
+  TWILIO_ACCOUNT_SID: z.string().min(1),
+  TWILIO_AUTH_TOKEN: z.string().min(1),
+  TWILIO_PHONE_NUMBER: z.string().min(1),
 })
 
 export type Env = z.infer<typeof EnvSchema>
