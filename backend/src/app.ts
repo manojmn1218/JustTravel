@@ -21,7 +21,7 @@ export function createApp() {
   app.use(helmet())
   const allowedOrigins = [
     env.CORS_ORIGIN,
-    'https://justtravel.vercel.app',
+    'https://just-travel-2axz.vercel.app',
   ]
 
   app.use(
