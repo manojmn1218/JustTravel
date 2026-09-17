@@ -1,9 +1,11 @@
 import { Router } from 'express'
+import rateLimit from 'express-rate-limit'
 import { z } from 'zod'
 import twilio from 'twilio'
 import { prisma } from '../db/prisma'
 import { HttpError } from '../errors'
 import { asyncHandler } from '../lib/asyncHandler'
+import { requireAuth } from '../middleware/auth'
 import { validateBody } from '../middleware/validate'
 import { getEnv } from '../env'
 
@@ -39,8 +41,19 @@ function formatE164(phone: string): string {
   return `+${cleaned}`
 }
 
+// Stricter rate limit for OTP: 5 requests per 10 minutes per IP
+const otpRateLimit = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  limit: 5,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: { error: { message: 'Too many OTP requests. Please try again later.' } },
+})
+
 otpRouter.post(
   '/send',
+  requireAuth,
+  otpRateLimit,
   validateBody(SendOtpSchema),
   asyncHandler(async (req, res) => {
     const { email, phone } = req.body as z.infer<typeof SendOtpSchema>

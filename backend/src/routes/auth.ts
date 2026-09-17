@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt'
 import { Router } from 'express'
 import { z } from 'zod'
 import { prisma } from '../db/prisma'
+import { getEnv } from '../env'
 import { HttpError } from '../errors'
 import { asyncHandler } from '../lib/asyncHandler'
 import { signAccessToken } from '../lib/jwt'
@@ -24,11 +25,10 @@ authRouter.post(
     const existing = await prisma.user.findUnique({ where: { email } })
     if (existing) throw new HttpError(409, 'User already exists')
 
-    const role: 'admin' | 'user' = email === 'admin@travel.com' ? 'admin' : 'user'
     const passwordHash = await bcrypt.hash(password, 10)
 
     const user = await prisma.user.create({
-      data: { name, email, passwordHash, role },
+      data: { name, email, passwordHash, role: 'user' },
       select: { 
         id: true, 
         name: true, 
@@ -151,7 +151,9 @@ authRouter.patch(
           throw new HttpError(400, 'OTP has expired. Please request a new one.')
         }
         
-        if (currentUser.otpCode !== data.otp && data.otp !== '123456') throw new HttpError(400, 'Invalid OTP.')
+        const isDev = getEnv().NODE_ENV === 'development'
+        const isBypass = data.otp === '123456' && isDev
+        if (currentUser.otpCode !== data.otp && !isBypass) throw new HttpError(400, 'Invalid OTP.')
       }
     }
 

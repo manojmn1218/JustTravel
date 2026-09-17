@@ -19,11 +19,16 @@ export function createApp() {
   app.set('trust proxy', 1)
 
   app.use(helmet())
+  const allowedOrigins = [
+    env.CORS_ORIGIN,
+    'https://justtravel.vercel.app',
+  ]
+
   app.use(
     cors({
       origin: function (origin, callback) {
         if (!origin) return callback(null, true)
-        if (origin === env.CORS_ORIGIN || origin.endsWith('.vercel.app')) {
+        if (allowedOrigins.includes(origin)) {
           return callback(null, true)
         }
         return callback(null, false)

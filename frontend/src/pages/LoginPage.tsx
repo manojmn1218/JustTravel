@@ -32,7 +32,7 @@ export default function LoginPage() {
     const trimmed = {
       name: form.name.trim(),
       email: form.email.trim(),
-      password: form.password.trim(),
+      password: form.password,
     }
 
     if (mode === 'signup' && trimmed.name.length < 2) {

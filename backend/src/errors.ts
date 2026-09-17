@@ -12,13 +12,27 @@ export class HttpError extends Error {
 }
 
 export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
-  const status = err instanceof HttpError ? err.status : 500
-  const message = err instanceof Error ? err.message : 'Unknown error'
+  const isProduction = process.env.NODE_ENV === 'production'
 
-  res.status(status).json({
+  if (err instanceof HttpError) {
+    res.status(err.status).json({
+      error: {
+        message: err.message,
+        ...(err.details && !isProduction ? { details: err.details } : null),
+      },
+    })
+    return
+  }
+
+  // For unexpected errors, hide details in production
+  if (!isProduction) {
+    console.error('[ERROR]', err)
+  }
+
+  res.status(500).json({
     error: {
-      message,
-      ...(err instanceof HttpError && err.details ? { details: err.details } : null),
+      message: isProduction ? 'Internal server error' : (err instanceof Error ? err.message : 'Unknown error'),
     },
   })
 }
+
